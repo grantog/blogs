@@ -46,7 +46,7 @@ insert into purchase_table values (
 I don't want to spend too much time on the code creating our table, but in essence, we are looking at a table that has data on customer purchases. We have a column for the record ID (`id`), the customer ID (`customer_id`), the date the goods were purchased (`purchase_date`), and our last column which is a JSON array containing details of the order (`order_detail`).
 
 Raw Table:   
-(https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true "Raw Table")
+[Our Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true "Raw Table")
 ---
 ### The Old Way
 One way of parsing through this JSON array is using `jsonb_array_elements()` combined with`->>`. 
