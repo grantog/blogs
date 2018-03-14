@@ -45,6 +45,7 @@ insert into purchase_table values (
 
 I don't want to spend too much time on the code creating our table, but in essence, we are looking at a table that has data on customer purchases. We have a column for the record ID (`id`), the customer ID (`customer_id`), the date the goods were purchased (`purchase_date`), and our last column which is a JSON array containing details of the order (`order_detail`).
 
+Raw Table:   
 ![Our Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true "Raw Table")
 ---
 ### The Old Way
@@ -90,7 +91,7 @@ Now, let's break this down to understand what each part is doing.
 
 ---
 ### Additional Filtering
-You also do not need to define each column within `order_detail`. If you only want the total_items and total_cost, you can just signify that! Additionally, the combination of these functions allow for filtering within the same query.
+You also do not need to define each column within `order_detail`. If you only want the total_items and total_cost, you can easily signify that. Additionally, the combination of these functions allow for filtering within the same query rather than needing a CTE statement or nested FROM statement.
 
 If you wanted only orders that had 3 or more items and were only interested in `total_items` and `total_cost`, your query would look as so:
 ```
