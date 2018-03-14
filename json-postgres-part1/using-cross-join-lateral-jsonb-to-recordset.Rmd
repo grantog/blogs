@@ -1,11 +1,4 @@
----
-title: 'Using JSON to your advantage in PostgreSQL'
-author: "Grant Ognibene"
-date: "2/24/2018"
-output: html_document
----
-
-## Parse through a JSON array in Postgres using *cross join lateral* and `jsonb_to_recordset`
+## Parse through a JSON array in Postgres using *cross join lateral* and *jsonb_to_recordset*
 
 Many data science courses and blogs cover the fun part of data science: designing machine (and deep) learning models for prediction. However, a precursor to the fun stuff is pulling the data from databases and preparing it for the machine learning algorithms we all love. 
 
@@ -49,6 +42,8 @@ insert into purchase_table values (
 ```
 
 I don't want to spend too much time on the code creating our table, but in essence, we are looking at a table that has data on customer purchases. We have a column for the record ID (`id`), the customer ID (`customer_id`), the date the goods were purchased (`purchase_date`), and our last column which is a JSON array containing details of the order (`order_detail`).
+
+![Our Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true)
 
 One way of parsing through this JSON array is using `jsonb_array_elements()` combined with`->>`. 
 ```
@@ -97,7 +92,7 @@ FROM purchase_table
 CROSS JOIN LATERAL jsonb_to_recordset(order_detail) 
   as od(
     total_items numeric,
-    total_cost float,
+    total_cost float
     )
 WHERE total_items >=3
 ```
