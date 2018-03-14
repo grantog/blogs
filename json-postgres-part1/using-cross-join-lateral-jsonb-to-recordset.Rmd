@@ -1,10 +1,13 @@
-## Parse through a JSON array in Postgres using *cross join lateral* and *jsonb_to_recordset*
+# Parse through JSON array in Postgres 
+## Using *cross join lateral* and *jsonb_to_recordset*
 
 Many data science courses and blogs cover the fun part of data science: designing machine (and deep) learning models for prediction. However, a precursor to the fun stuff is pulling the data from databases and preparing it for the machine learning algorithms we all love. 
 
 In the course of a data scientist's (and analyst's) work, they will likely need to know how to work with JSON arrays and objects. This blog post will highlight a neat way to parse through a JSON array within PostreSQL (Postgres) using [`cross join lateral`](https://www.postgresql.org/docs/9.6/static/queries-table-expressions.html)  and [`jsonb_to_recordset()`](https://www.postgresql.org/docs/9.6/static/functions-json.html). The combination of these two functions together allows us to create a (mini) table that we can use to join, manipulate, and filter within our main Postgres query.
 
 Before coming across these two functions, I frequently used `jsonb_array_elements()` combined with`->>`, which I found a bit more clunky, to parse and prepare JSON arrays. It often required using a [CTE](https://www.postgresql.org/docs/9.6/static/queries-with.html) statement or nesting a query within the FROM statement.
+
+---
 
 For the purposes of this post, let's use the table below written in Postgres. For ease in seeing the data structure, I set up a [SQL Fiddle](http://sqlfiddle.com/#!17/0fec9/22). 
 ```
@@ -44,7 +47,7 @@ insert into purchase_table values (
 I don't want to spend too much time on the code creating our table, but in essence, we are looking at a table that has data on customer purchases. We have a column for the record ID (`id`), the customer ID (`customer_id`), the date the goods were purchased (`purchase_date`), and our last column which is a JSON array containing details of the order (`order_detail`).
 
 ![Our Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true "Raw Table")
-
+---
 One way of parsing through this JSON array is using `jsonb_array_elements()` combined with`->>`. 
 ```
 WITH initial as (
@@ -83,6 +86,8 @@ CROSS JOIN LATERAL jsonb_to_recordset(order_detail)
 
 Now, let's break this down to understand what each part is doing.
 `jsonb_to_recordset()` 'builds an arbitrary set of records from a JSON array of objects'. I usually describe this as "building a mini table that you can use". I name the table using `as od` and subsequently define the columns I want to pull and the column [types](https://www.postgresql.org/docs/9.6/static/datatype.html). This has created a temporary table with those columns that we can now use to join on our `purchase_table` data, which is what `CROSS JOIN LATERAL` helps us with.
+
+---
 
 You also do not need to define each column within `order_detail`. If you only want the total_items and total_cost, you can just signify that! Additionally, the combination of these functions allow for filtering within the same query.
 
