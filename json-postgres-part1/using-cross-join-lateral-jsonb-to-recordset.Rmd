@@ -1,4 +1,4 @@
-# Parse through JSON array in Postgres 
+# Parsing through JSON arrays in Postgres 
 ## Using *cross join lateral* and *jsonb_to_recordset*
 
 Many data science courses and blogs cover the fun part of data science: designing machine (and deep) learning models for prediction. However, a precursor to the fun stuff is pulling the data from databases and preparing it for the machine learning algorithms we all love. 
@@ -48,6 +48,7 @@ I don't want to spend too much time on the code creating our table, but in essen
 
 ![Our Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true "Raw Table")
 ---
+### The Old Way
 One way of parsing through this JSON array is using `jsonb_array_elements()` combined with`->>`. 
 ```
 WITH initial as (
@@ -65,6 +66,7 @@ select
 from initial
 ```
 
+### The New Way
 However, is there a way to get to the same outcome without using a CTE or nested FROM statement? Enter `jsonb_to_recordset()` and `CROSS JOIN LATERAL`! Let's start:
 ```
 SELECT 
@@ -88,7 +90,7 @@ Now, let's break this down to understand what each part is doing.
 `jsonb_to_recordset()` 'builds an arbitrary set of records from a JSON array of objects'. I usually describe this as "building a mini table that you can use". I name the table using `as od` and subsequently define the columns I want to pull and the column [types](https://www.postgresql.org/docs/9.6/static/datatype.html). This has created a temporary table with those columns that we can now use to join on our `purchase_table` data, which is what `CROSS JOIN LATERAL` helps us with.
 
 ---
-
+### Additional Filtering
 You also do not need to define each column within `order_detail`. If you only want the total_items and total_cost, you can just signify that! Additionally, the combination of these functions allow for filtering within the same query.
 
 If you wanted only orders that had 3 or more items and were only interested in `total_items` and `total_cost`, your query would look as so:
