@@ -5,9 +5,7 @@ date: "2/24/2018"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+## Parse through a JSON array in Postgres using *cross join lateral* and `jsonb_to_recordset`
 
 Many data science courses and blogs cover the fun part of data science: designing machine (and deep) learning models for prediction. However, a precursor to the fun stuff is pulling the data from databases and preparing it for the machine learning algorithms we all love. 
 
