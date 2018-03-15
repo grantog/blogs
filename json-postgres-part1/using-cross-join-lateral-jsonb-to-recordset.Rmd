@@ -44,9 +44,16 @@ insert into purchase_table values (
 ```
 
 I don't want to spend too much time on the code creating our table, but in essence, we are looking at a table that has data on customer purchases. We have a column for the record ID (`id`), the customer ID (`customer_id`), the date the goods were purchased (`purchase_date`), and our last column which is a JSON array containing details of the order (`order_detail`).
-![Our Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-query.png?raw=true "Raw Table")
 
----
+*Our Table:*  
+
+id | customer_id | purchase_date | order_detail 
+--- | --- | --- | ---  
+13512559 | 315 | 2018-03-25 | [{"items": ["eggs", "avocado", "bread", "salt"], "order_id": 123, "gift_card": {"x": false}, "total_cost": "12.87", "total_items": 4}] 
+13512671 | 167 | 2018-03-25 | [{"items": ["milk", "coffee"], "order_id": 98, "gift_card": {"x": true}, "total_cost": "9.29", "total_items": 2}] 
+
+
+
 ### The Old Way
 One way of parsing through this JSON array is using `jsonb_array_elements()` combined with`->>`. 
 ```
@@ -83,7 +90,15 @@ CROSS JOIN LATERAL jsonb_to_recordset(order_detail)
     )
 ```
 
-![Parsed Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/unfiltered-table.png "Parsed Table")
+
+*Parsed Table:*   
+
+customer_id | purchase_date | order_id | total_items | items | total_cost | gift_card
+--- | --- | --- | --- | --- | --- | --- 
+315 | 2018-03-25 | 123 | 4 | ["eggs","avocado", "bread", "salt"] | 12.87 | "x": false
+167 | 2018-03-25 | 98 | 2 | ["milk","coffee"] | 9.29 | "x": true
+
+
 
 Now, let's break this down to understand what each part is doing.
 `jsonb_to_recordset()` 'builds an arbitrary set of records from a JSON array of objects'. I usually describe this as "building a mini table that you can use". I name the table using `as od` and subsequently define the columns I want to pull and the column [types](https://www.postgresql.org/docs/9.6/static/datatype.html). This has created a temporary table with those columns that we can now use to join on our `purchase_table` data, which is what `CROSS JOIN LATERAL` helps us with.
@@ -106,7 +121,11 @@ CROSS JOIN LATERAL jsonb_to_recordset(order_detail)
 WHERE total_items >=3
 ```
 
-![Filtered Table](https://github.com/grantog/blogs/blob/master/json-postgres-part1/filtered-query.png?raw=true "Filtered Table")
+
+customer_id | purchase_date | order_id | total_items | items | total_cost | gift_card
+--- | --- | --- | --- | --- | --- | --- 
+315 | 2018-03-25 | 123 | 4 | ["eggs","avocado", "bread", "salt"] | 12.87 | "x": false
+
 
 One cautionary note, using 2 or more `CROSS JOIN LATERAL`'s in this format within the same query could duplicate your data so it's best to use this when you only need to parse and prepare through a single JSON array.
 
