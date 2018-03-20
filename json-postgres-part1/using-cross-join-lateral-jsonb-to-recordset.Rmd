@@ -104,7 +104,8 @@ Now, let's break this down to understand what each part is doing.
 `jsonb_to_recordset()` 'builds an arbitrary set of records from a JSON array of objects'. I usually describe this as "building a mini table that you can use". I name the table using `as od` and subsequently define the columns I want to pull and the column [types](https://www.postgresql.org/docs/9.6/static/datatype.html). This has created a temporary table with those columns that we can now use to join on our `purchase_table` data, which is what `CROSS JOIN LATERAL` helps us with.
 
 ---
-### Additional Filtering
+### Additional Notes
+#### Filtering
 You also do not need to define each column within `order_detail`. If you only want the total_items and total_cost, you can easily signify that. Additionally, the combination of these functions allow for filtering within the same query rather than needing a CTE statement or nested FROM statement.
 
 If you wanted only orders that had 3 or more items and were only interested in `total_items` and `total_cost`, your query would look as so:
@@ -121,13 +122,12 @@ CROSS JOIN LATERAL jsonb_to_recordset(order_detail)
 WHERE total_items >=3
 ```
 
-
 customer_id | purchase_date | order_id | total_items | items | total_cost | gift_card
 --- | --- | --- | --- | --- | --- | --- 
 315 | 2018-03-25 | 123 | 4 | ["eggs","avocado", "bread", "salt"] | 12.87 | "x": false
 
 
-**Two helpful notes:**
+#### Handling Camel Case
 1. If your JSON array contains a string that is *camel case* (e.g., camelCase), then you will need to keep the camel case and wrap that variable in double quotes. Example: referencing the query code above, if `total_items` was actually `totalItems`, my query would look as followed:  
 ```SQL
 SELECT 
@@ -141,7 +141,8 @@ CROSS JOIN LATERAL jsonb_to_recordset(order_detail)
     )
 WHERE total_items >=3
 ``` 
-
+#### Only one `CROSS JOIN LATERAL` per query
 2. Using *two or more `CROSS JOIN LATERAL`'s* in this format within the same query could duplicate your data so it's best to use this when you only need to parse and prepare through a single JSON array.
+
 
 So, there you have it! A new (and hopefully easier and helpful) way to use parse, join, and prepare your JSON data. Happy data-ing!
