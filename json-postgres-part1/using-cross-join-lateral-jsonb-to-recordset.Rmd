@@ -9,7 +9,7 @@ Before coming across these two functions, I frequently used `jsonb_array_element
 ---
 
 For the purposes of this post, let's use the table below written in Postgres. For ease in seeing the data structure, I set up a [SQL Fiddle](http://sqlfiddle.com/#!17/0fec9/22). 
-```
+```SQL
 create table purchase_table (
     id serial primary key,
     customer_id text,
@@ -56,7 +56,7 @@ id | customer_id | purchase_date | order_detail
 
 ### The Old Way
 One way of parsing through this JSON array is using `jsonb_array_elements()` combined with`->>`. 
-```
+```SQL
 WITH initial as (
   SELECT 
     customer_id, purchase_date, 
@@ -74,7 +74,7 @@ from initial
 
 ### The New Way
 However, is there a way to get to the same outcome without using a CTE or nested FROM statement? Enter `jsonb_to_recordset()` and `CROSS JOIN LATERAL`! Let's start:
-```
+```SQL
 SELECT 
   customer_id, purchase_date,
   od.order_id, od.total_items,
@@ -108,7 +108,7 @@ Now, let's break this down to understand what each part is doing.
 You also do not need to define each column within `order_detail`. If you only want the total_items and total_cost, you can easily signify that. Additionally, the combination of these functions allow for filtering within the same query rather than needing a CTE statement or nested FROM statement.
 
 If you wanted only orders that had 3 or more items and were only interested in `total_items` and `total_cost`, your query would look as so:
-```
+```SQL 
 SELECT 
   customer_id, purchase_date,
   od.total_items, od.total_cost
@@ -139,7 +139,8 @@ CROSS JOIN LATERAL jsonb_to_recordset(order_detail)
     "totalItems" numeric,
     total_cost float
     )
-WHERE total_items >=3``` 
+WHERE total_items >=3
+``` 
 
 2. Using *two or more `CROSS JOIN LATERAL`'s* in this format within the same query could duplicate your data so it's best to use this when you only need to parse and prepare through a single JSON array.
 
